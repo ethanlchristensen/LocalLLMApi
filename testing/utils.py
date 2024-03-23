@@ -6,3 +6,4 @@ def save_image(path: str, data: str):
         "wb",
     ) as image_file:
         image_file.write(base64.b64decode(data))
+        

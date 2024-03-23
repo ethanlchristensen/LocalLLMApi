@@ -116,7 +116,7 @@ class StableController(Controller):
             ),
         ],
     ) -> GenericResponse:
-        
+
         txt2img_request_payload = stable_base_json.copy()
         txt2img_request_payload["hr_negative_prompt"] = data.negative_prompt
         txt2img_request_payload["negative_prompt"] = data.negative_prompt
@@ -127,17 +127,20 @@ class StableController(Controller):
         txt2img_request_payload["steps"] = data.steps
         txt2img_request_payload["seed"] = data.seed
         txt2img_request_payload["hr_upscaler"] = data.upscale_model.value
-        txt2img_request_payload["sampler_name"] = data.sampler.value if data.sampler else SamplerSet.ddim
+        txt2img_request_payload["sampler_name"] = (
+            data.sampler.value if data.sampler else SamplerSet.ddim
+        )
         txt2img_request_payload["n_iter"] = data.images.value
-        
+
         try:
             response = await call_txt2img(payload=txt2img_request_payload)
         except Exception as e:
-            return GenericResponse(success=False, response={"response": {"message": f"An error has occured: {e}"}})
-        
-        return GenericResponse(
-            success=True, response=response
-        )
+            return GenericResponse(
+                success=False,
+                response={"response": {"message": f"An error has occured: {e}"}},
+            )
+
+        return GenericResponse(success=True, response=response)
 
 
 app = Litestar(

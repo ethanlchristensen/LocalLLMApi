@@ -1,16 +1,13 @@
 from pydantic import BaseModel as _BaseModel
 
+
 class BaseModel(_BaseModel):
     """Extend Pydantic's BaseModel to enable ORM mode"""
 
     model_config = {"from_attributes": True}
 
-from utils import (
-    Upscale,
-    UpscaleModel,
-    SamplerSet,
-    Images
-)
+
+from utils import Upscale, UpscaleModel, SamplerSet, Images
 
 
 class OllamaChatRequest(BaseModel):
@@ -28,7 +25,7 @@ class OpenaiChatRequest(BaseModel):
 class GenericResponse(BaseModel):
     success: bool
     response: dict | None
-    
+
 
 class ImagineRequest(BaseModel):
     prompt: str
