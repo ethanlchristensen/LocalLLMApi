@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import openai
-
 import json
+import openai
 import requests
 
 from asyncio import sleep
+from dotenv import load_dotenv
+from litestar.params import Body
+from litestar.openapi.spec import tag
 from typing import Any, Dict, Annotated
 from litestar.openapi import OpenAPIConfig
 from litestar import Controller, Litestar, get, post
-from litestar.openapi.spec import tag
-from litestar.params import Body
+from utils import stable_base_json, SamplerSet, call_txt2img
 from payloads import (
     OpenaiChatRequest,
     OllamaChatRequest,
@@ -18,12 +19,7 @@ from payloads import (
     GenericResponse,
 )
 
-from utils import stable_base_json, SamplerSet, call_txt2img
-
-from dotenv import load_dotenv
-
 load_dotenv(override=True)
-
 client = openai.OpenAI()
 
 
