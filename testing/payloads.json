@@ -1,0 +1,27 @@
+{
+    "imagine": {
+        "prompt": " The image depicts a serene landscape scene featuring a rocky coastline with cliffs, a body of water resembling a calm sea or lake, and lush greenery. There is a path on the left that seems to lead towards the rock formation. The lighting suggests either sunrise or sunset, given the soft shadows and the golden hue in the sky. The style of the image has a realistic yet slightly stylized appearance, reminiscent of traditional landscape painting techniques.",
+        "negative_prompt": "",
+        "quality": 2,
+        "cfg_scale": 3.0,
+        "steps": 15,
+        "seed": -1,
+        "upscale_model": "Latent",
+        "sample_set": "ddim",
+        "images": 1
+    },
+    "jade": {
+        "prompt": "Hello there. How are you?",
+        "model": "Jade"
+    },
+    "marcus": {
+        "prompt": "Hello there. How are you?",
+        "model": "Marcus"
+    },
+    "openai": {
+        "system_prompt": "You are an expert programmer that likes to use odd programming languages.",
+        "user_prompt": "How do I write hello world in three random programing languages?",
+        "model": "gpt-3.5-turbo",
+        "max_tokens": 500
+    }
+}
