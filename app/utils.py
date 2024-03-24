@@ -36,7 +36,7 @@ def call_txt2img(payload: dict):
     """
     # call the api
     response = requests.post(
-        url=r"http://127.0.0.1:7861/sdapi/v1/txt2img", json=payload
+        url=r"http://host.docker.internal:7861/sdapi/v1/txt2img", json=payload
     ).json()
     return response
 

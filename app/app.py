@@ -83,7 +83,7 @@ class ChatController(Controller):
                 "stream": False,
             }
             response = requests.post(
-                r"http://127.0.0.1:11434/api/generate",
+                r"http://host.docker.internal:11434/api/generate",
                 data=json.dumps(request_payload),
                 headers={"Content-Type": "application/json"},
             )
@@ -142,4 +142,5 @@ class StableController(Controller):
 app = Litestar(
     route_handlers=[ChatController, StableController],
     openapi_config=OpenAPIConfig(title="Local LLM API", version="1.0.0"),
+    allowed_hosts=["127.0.0.1"]
 )
