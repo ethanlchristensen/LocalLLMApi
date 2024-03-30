@@ -1,4 +1,6 @@
+import os
 import json
+import pyodbc
 import typing
 import asyncio
 import requests
@@ -209,3 +211,67 @@ stable_base_json = {
     "tiling": False,
     "width": 800,
 }
+
+
+class LocalLLMDatabaseManager:
+    def __init__(self, server: str, database: str):
+        self.__server = server
+        self.__database = database
+        self.active = not (self.__server is None or self.__database is None)
+    def ___get_connection(self):
+        connection_strig = (
+            r"Driver={SQL Server};"
+            f"Server={self.__server};"
+            f"Database={self.__database};"
+            r"Trusted_Connection=yes;"
+        )
+
+        return pyodbc.connect(connection_strig)
+
+    def insert_chat_request(
+        self,
+        user_message: str,
+        ai_response: str | None,
+        model: str | None,
+        json_payload: str | None,
+    ) -> str:
+        response = None
+
+        conn = self.___get_connection()
+        cursor = conn.cursor()
+
+        insert_query = "INSERT INTO [LocalLLMApi].[dbo].[ChatRequests] (DatetimeUTC, UserMessage, AIResponse, Model, JsonPayload) VALUES (GETUTCDATE(), ?, ?, ?, ?)"
+        try:
+            cursor.execute(
+                insert_query, (user_message, ai_response, model, json_payload)
+            )
+            conn.commit()
+            response = "Successfully inserted the records into the database."
+        except Exception as e:
+            response = f"Failed to insert the records into the database: {e}."
+
+        cursor.close()
+        conn.close()
+
+        return response
+
+    def insert_stable_request(
+        self, user_message: str | None, negative_prompt: str | None, image: str | None
+    ) -> str:
+        conn = self.___get_connection()
+        cursor = conn.cursor()
+
+        response = None
+
+        insert_query = "INSERT INTO [LocalLLMApi].[dbo].[StableRequests] (DatetimeUTC, UserMessage, Image, NegativePrompt) VALUES (GETUTCDATE(), ?, ?, ?)"
+        try:
+            cursor.execute(insert_query, (user_message, image, negative_prompt))
+            conn.commit()
+            response = "Successfully inserted image into the database."
+        except Exception as e:
+            response = f"Failed to insert the image into the database: {e}."
+
+        cursor.close()
+        conn.close()
+
+        return response

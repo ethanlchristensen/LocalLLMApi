@@ -1,10 +1,10 @@
 {
     "imagine": {
-        "prompt": " The image depicts a serene landscape scene featuring a rocky coastline with cliffs, a body of water resembling a calm sea or lake, and lush greenery. There is a path on the left that seems to lead towards the rock formation. The lighting suggests either sunrise or sunset, given the soft shadows and the golden hue in the sky. The style of the image has a realistic yet slightly stylized appearance, reminiscent of traditional landscape painting techniques.",
+        "prompt": "The image depicts a serene landscape scene featuring a rocky coastline with cliffs, a body of water resembling a calm sea or lake, and lush greenery. There is a path on the left that seems to lead towards the rock formation. The lighting suggests either sunrise or sunset, given the soft shadows and the golden hue in the sky. The style of the image has a realistic yet slightly stylized appearance, reminiscent of traditional landscape painting techniques but is highly realistic and detailed.",
         "negative_prompt": "",
         "quality": 2,
-        "cfg_scale": 3.0,
-        "steps": 15,
+        "cfg_scale": 5.0,
+        "steps": 30,
         "seed": -1,
         "upscale_model": "Latent",
         "sample_set": "ddim",
