@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /usr/src/app
 
+RUN apt-get update
+RUN apt-get install unixodbc-dev -y
+
 RUN pip install poetry
 
 COPY pyproject.toml poetry.lock* /usr/src/app/

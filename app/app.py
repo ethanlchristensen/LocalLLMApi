@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import os
 import json
+import time
+import base64
 import openai
+import logging
 import requests
 
 from asyncio import sleep
@@ -11,7 +15,8 @@ from litestar.openapi.spec import tag
 from typing import Any, Dict, Annotated
 from litestar.openapi import OpenAPIConfig
 from litestar import Controller, Litestar, get, post
-from utils import stable_base_json, SamplerSet, call_txt2img
+from litestar.config.cors import CORSConfig
+from utils import stable_base_json, SamplerSet, call_txt2img, LocalLLMDatabaseManager
 from payloads import (
     OpenaiChatRequest,
     OllamaChatRequest,
@@ -21,7 +26,10 @@ from payloads import (
 
 load_dotenv(override=True)
 client = openai.OpenAI()
-
+logger = logging.getLogger(__name__)
+db = LocalLLMDatabaseManager(
+    os.getenv("LOCAL_SQL_SERVER"), os.getenv("LOCAL_SQL_DATABASE")
+)
 
 class ChatController(Controller):
     path = "/chat"
@@ -52,6 +60,14 @@ class ChatController(Controller):
                 max_tokens=data.max_tokens,
             )
 
+            if db.active:
+                db.insert_chat_request(
+                    user_message=data.user_prompt,
+                    ai_response=completion.choices[0].message.content,
+                    model=data.model,
+                    json_payload=str(completion.model_dump_json()),
+                )
+
             return GenericResponse(
                 success=True,
                 response={"response": completion.choices[0].message.content},
@@ -74,7 +90,7 @@ class ChatController(Controller):
     ) -> GenericResponse:
         """Route Handler that interfaces with Local / Non-Local LLM"""
 
-        print(data)
+        logger.info(f"/ollama called with: {data}")
 
         try:
             request_payload = {
@@ -82,18 +98,37 @@ class ChatController(Controller):
                 "prompt": data.prompt,
                 "stream": False,
             }
+
             response = requests.post(
                 r"http://host.docker.internal:11434/api/generate",
                 data=json.dumps(request_payload),
-                headers={"Content-Type": "application/json"},
+                headers={"Content-Type": "application/json"}
             )
+            
+            try:
+                if db.active:
+                    db_response = db.insert_chat_request(
+                        user_message=data.prompt,
+                        ai_response=response.json()["response"],
+                        model=data.model,
+                        json_payload=str(response.json()),
+                    )
+                
+                    logger.info(f"db response: {db_response}")
+            except Exception as db_error:
+                logger.info(f"db insert error: {db_error}")
 
-            response_json = json.loads(response.content.decode("utf8"))
-
-            return GenericResponse(success=True, response=response_json)
+            return GenericResponse(success=True, response=json.loads(response.content.decode("utf8")))
         except Exception as e:
+            logger.info(e)
             return GenericResponse(
-                success=False, response={"response": {"message": str(e)}}
+                success=False,
+                response={
+                    "response": {
+                        "message": str(e),
+                        "response": "Could not reach Ollama!",
+                    }
+                },
             )
 
 
@@ -130,6 +165,23 @@ class StableController(Controller):
 
         try:
             response = await call_txt2img(payload=txt2img_request_payload)
+            if db.active:
+                for image in response["images"]:
+                    try:
+                        s = time.time()
+                        logger.info("converting base64 image data to binary.")
+                        image_binary = base64.b64decode(image)
+                        logger.info("attempting to insert image request into db")
+                        db_response = db.insert_stable_request(
+                            user_message=data.prompt,
+                            negative_prompt=data.negative_prompt,
+                            image=image_binary
+                        )
+                        logger.info(f"db response: {db_response}")
+                        end = time.time() - s
+                        logger.info(f"time elapsed inserting image into db: {end}")
+                    except Exception as db_error:
+                        logger.info(f"db insert failed: {db_error}")
         except Exception as e:
             return GenericResponse(
                 success=False,
@@ -142,5 +194,6 @@ class StableController(Controller):
 app = Litestar(
     route_handlers=[ChatController, StableController],
     openapi_config=OpenAPIConfig(title="Local LLM API", version="1.0.0"),
-    allowed_hosts=["127.0.0.1"]
+    allowed_hosts=["*"],
+    cors_config=CORSConfig(allow_origins=["*"]),
 )
