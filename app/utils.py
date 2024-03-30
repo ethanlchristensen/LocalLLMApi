@@ -240,7 +240,18 @@ class LocalLLMDatabaseManager:
         conn = self.___get_connection()
         cursor = conn.cursor()
 
-        insert_query = "INSERT INTO [LocalLLMApi].[dbo].[ChatRequests] (DatetimeUTC, UserMessage, AIResponse, Model, JsonPayload) VALUES (GETUTCDATE(), ?, ?, ?, ?)"
+        insert_query = """
+set xact_abort on
+Begin Try
+  Begin Tran
+    INSERT INTO [LocalLLMApi].[dbo].[ChatRequests] (DatetimeUTC, UserMessage, AIResponse, Model, JsonPayload) VALUES (GETUTCDATE(), ?, ?, ?, ?)
+  Commit Tran
+End Try
+
+Begin Catch
+   Rollback Tran
+End Catch
+"""
         try:
             cursor.execute(
                 insert_query, (user_message, ai_response, model, json_payload)
@@ -263,7 +274,21 @@ class LocalLLMDatabaseManager:
 
         response = None
 
-        insert_query = "INSERT INTO [LocalLLMApi].[dbo].[StableRequests] (DatetimeUTC, UserMessage, Image, NegativePrompt) VALUES (GETUTCDATE(), ?, ?, ?)"
+        
+
+        insert_query = """
+set xact_abort on
+Begin Try
+  Begin Tran
+    INSERT INTO [LocalLLMApi].[dbo].[StableRequests] (DatetimeUTC, UserMessage, Image, NegativePrompt) VALUES (GETUTCDATE(), ?, ?, ?)
+  Commit Tran
+End Try
+
+Begin Catch
+   Rollback Tran
+End Catch
+"""
+        
         try:
             cursor.execute(insert_query, (user_message, image, negative_prompt))
             conn.commit()
