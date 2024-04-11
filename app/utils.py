@@ -218,15 +218,35 @@ class LocalLLMDatabaseManager:
         self.__server = server
         self.__database = database
         self.active = not (self.__server is None or self.__database is None)
+        self.active = self.__test_connection()
+        
+        if not self.active:
+            print("INFO: Database is not active as connection could not be made.")
+        
+    def __test_connection(self):
+        connection_string = (
+            r"Driver={SQL Server};"
+            f"Server={self.__server};"
+            f"Database={self.__database};"
+            r"Trusted_Connection=yes;"
+        )
+        
+        try:
+            conn = pyodbc.connect(connection_string)
+            conn.close()
+            return True
+        except:
+            return False
+        
     def ___get_connection(self):
-        connection_strig = (
+        connection_string = (
             r"Driver={SQL Server};"
             f"Server={self.__server};"
             f"Database={self.__database};"
             r"Trusted_Connection=yes;"
         )
 
-        return pyodbc.connect(connection_strig)
+        return pyodbc.connect(connection_string)
 
     def insert_chat_request(
         self,

@@ -47,6 +47,7 @@ class ChatController(Controller):
         ],
     ) -> GenericResponse:
         """Route to ping and chat with Openai"""
+        logger.info(f"/chat/openai called with: {data}")
         try:
             completion = client.chat.completions.create(
                 model=data.model,
@@ -90,8 +91,7 @@ class ChatController(Controller):
     ) -> GenericResponse:
         """Route Handler that interfaces with Local / Non-Local LLM"""
 
-        logger.info(f"/ollama called with: {data}")
-
+        logger.info(f"chat//ollama called with: {data}")
         try:
             request_payload = {
                 "model": data.model if data.model else "Marcus",
@@ -147,7 +147,8 @@ class StableController(Controller):
             ),
         ],
     ) -> GenericResponse:
-
+        """Route to call locally hosted stable diffusion API"""
+        logger.info(f"/stable/image called with: {data}")
         txt2img_request_payload = stable_base_json.copy()
         txt2img_request_payload["hr_negative_prompt"] = data.negative_prompt
         txt2img_request_payload["negative_prompt"] = data.negative_prompt
@@ -189,7 +190,6 @@ class StableController(Controller):
             )
 
         return GenericResponse(success=True, response=response)
-
 
 app = Litestar(
     route_handlers=[ChatController, StableController],

@@ -15,7 +15,7 @@
         "model": "Jade"
     },
     "marcus": {
-        "prompt": "Hey, it's me Ethan. How are you?",
+        "prompt": "Hey Marcus, gald to be talking with you.",
         "model": "Marcus"
     },
     "openai": {
