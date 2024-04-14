@@ -186,7 +186,7 @@ class StableController(Controller):
         except Exception as e:
             return GenericResponse(
                 success=False,
-                response={"response": {"message": f"An error has occured: {e}"}},
+                response={"data": {"message": f"An error has occured: {e}"}},
             )
 
         return GenericResponse(success=True, response=response)

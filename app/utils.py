@@ -37,10 +37,13 @@ def call_txt2img(payload: dict):
         _type_: JSON response from the stable API.
     """
     # call the api
+    # response = requests.post(
+    #     url=r"http://127.0.0.1:7861/sdapi/v1/txt2img", json=payload
+    # ).json()
     response = requests.post(
-        url=r"http://127.0.0.1:7861/sdapi/v1/txt2img", json=payload
-    ).json()
-    return response
+        url=r"http://host.docker.internal:7861/sdapi/v1/txt2img", json=payload
+    )
+    return response.json()
 
 
 # upscale options
@@ -178,7 +181,7 @@ stable_base_json = {
     "do_not_save_grid": False,
     "do_not_save_samples": False,
     "enable_hr": True,
-    "height": 480,
+    "height": 600,
     "hr_negative_prompt": "",
     "hr_prompt": "",
     "hr_resize_x": 0,
@@ -209,7 +212,7 @@ stable_base_json = {
     "subseed": 2408667576,
     "subseed_strength": 0,
     "tiling": False,
-    "width": 800,
+    "width": 900,
 }
 
 
@@ -221,7 +224,7 @@ class LocalLLMDatabaseManager:
         self.active = self.__test_connection()
         
         if not self.active:
-            print("INFO: Database is not active as connection could not be made.")
+            print("INFO:\t  Database is not active. Connection could not be made.")
         
     def __test_connection(self):
         connection_string = (
