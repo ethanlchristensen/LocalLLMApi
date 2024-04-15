@@ -37,10 +37,13 @@ def call_txt2img(payload: dict):
         _type_: JSON response from the stable API.
     """
     # call the api
+    # response = requests.post(
+    #     url=r"http://127.0.0.1:7861/sdapi/v1/txt2img", json=payload
+    # ).json()
     response = requests.post(
-        url=r"http://127.0.0.1:7861/sdapi/v1/txt2img", json=payload
-    ).json()
-    return response
+        url=r"http://host.docker.internal:7861/sdapi/v1/txt2img", json=payload
+    )
+    return response.json()
 
 
 # upscale options
@@ -178,7 +181,7 @@ stable_base_json = {
     "do_not_save_grid": False,
     "do_not_save_samples": False,
     "enable_hr": True,
-    "height": 480,
+    "height": 600,
     "hr_negative_prompt": "",
     "hr_prompt": "",
     "hr_resize_x": 0,
@@ -209,7 +212,7 @@ stable_base_json = {
     "subseed": 2408667576,
     "subseed_strength": 0,
     "tiling": False,
-    "width": 800,
+    "width": 900,
 }
 
 
@@ -218,15 +221,35 @@ class LocalLLMDatabaseManager:
         self.__server = server
         self.__database = database
         self.active = not (self.__server is None or self.__database is None)
+        self.active = self.__test_connection()
+        
+        if not self.active:
+            print("INFO:\t  Database is not active. Connection could not be made.")
+        
+    def __test_connection(self):
+        connection_string = (
+            r"Driver={SQL Server};"
+            f"Server={self.__server};"
+            f"Database={self.__database};"
+            r"Trusted_Connection=yes;"
+        )
+        
+        try:
+            conn = pyodbc.connect(connection_string)
+            conn.close()
+            return True
+        except:
+            return False
+        
     def ___get_connection(self):
-        connection_strig = (
+        connection_string = (
             r"Driver={SQL Server};"
             f"Server={self.__server};"
             f"Database={self.__database};"
             r"Trusted_Connection=yes;"
         )
 
-        return pyodbc.connect(connection_strig)
+        return pyodbc.connect(connection_string)
 
     def insert_chat_request(
         self,
